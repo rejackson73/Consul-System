@@ -20,9 +20,14 @@ variable "owner" {
   default = ""
 }
 
+variable "consul_version" {
+  type = string
+  default = ""
+}
+
 # Looking for the source image on which to pack my new image
 source "amazon-ebs" "ubuntu-image" {
-  ami_name = "${var.owner}_{{timestamp}}"
+  ami_name = "${var.owner}-consul-{{timestamp}}"
   region = "${var.aws_region}"
   instance_type = var.aws_instance_type
   tags = {
@@ -65,20 +70,14 @@ build {
     destination = "/tmp/consul-common.hcl"
   }
 
-# installing Linux items including Docker and of course Consul images
   provisioner "shell" {
     inline = [
       "sleep 30",
       "sudo apt-get update",
       "sudo apt install unzip -y",
-#      "sudo apt install nfs-common -y",
       "sudo apt install default-jre -y",
-#      "curl -fsSL \"https://get.docker.com\" -o get-docker.sh",
-#      "sudo sh get-docker.sh",
-#      "sleep 30",
-#      "sudo usermod -aG docker ubuntu",
-      "curl -k -O \"https://releases.hashicorp.com/consul/1.9.0/consul_1.9.0_linux_amd64.zip\"",
-      "unzip consul_1.9.0_linux_amd64.zip",
+      "curl -k -O \"https://releases.hashicorp.com/consul/${var.consul_version}/consul_${var.consul_version}_linux_amd64.zip\"",
+      "unzip consul_${var.consul_version}_linux_amd64.zip",
       "sudo mv consul /usr/local/bin"
     ]
   }
