@@ -1,0 +1,53 @@
+image:
+  name: registry.gitlab.com/gitlab-org/terraform-images/stable:latest
+
+stages:
+ - validate
+ - test
+ - build
+ - deploy
+ - cleanup
+
+variables:
+  TF_ROOT: ${CI_PROJECT_DIR}  # The relative path to the root directory of the Terraform project
+  TFC_TOKEN: ${TFE_TOKEN}
+
+# before_script:
+#   - echo "CI_JOB_JWT is ${CI_JOB_JWT}"
+#   - echo "CI_PROJECT_ID is ${CI_PROJECT_ID}"
+#   - echo "CI_PROJECT_PATH is ${CI_PROJECT_PATH}"
+#   - echo "CI_PROJECT_NAMESPACE is ${CI_PROJECT_NAMESPACE}"
+#   - echo "CI_PIPELINE_ID is ${CI_PIPELINE_ID}"
+#   - echo "CI_JOB_ID is ${CI_JOB_ID}"
+
+
+cache:
+  key: "${TF_ROOT}"
+  paths:
+    - ${TF_ROOT}/.terraform/
+
+# validate:
+#   stage: validate
+#   script:
+#     - cd ${TF_ROOT}
+#     - terraform fmt
+#     - sed "s/dont_checkin_tokens/${TFC_TOKEN}/" < .terraformrc.json.template > .terraformrc.json
+#     - cp ./.terraformrc.json ~/.terraform.d/credentials.tfrc.json
+#     - terraform init -backend=false
+#     - terraform validate
+
+build:
+  stage: test
+  script:
+    - cd ${TF_ROOT}
+    - sed "s/dont_checkin_tokens/${TFC_TOKEN}/" < .terraformrc.json.template > .terraformrc.json
+    - cp ./.terraformrc.json ~/.terraform.d/credentials.tfrc.json
+    - terraform init
+    - terraform plan
+
+include:
+  - template: Jobs/SAST-IaC.latest.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/License-Scanning.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
