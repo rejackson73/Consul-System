@@ -28,7 +28,7 @@ locals {
 ####################################
 data "aws_route53_zone" "selected" {
   name         = "hashidemos.io."
-  private_zone = false
+  private_zone = true
 }
 resource "aws_route53_record" "fqdn" {
   zone_id = data.aws_route53_zone.selected.zone_id
