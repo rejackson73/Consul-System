@@ -43,7 +43,7 @@ resource "aws_route53_record" "fqdn" {
 ###############################
 resource aws_vpc "consul-demo" {
   cidr_block           = var.vpc_cidr
-  enable_dns_hostnames = true
+  enable_dns_hostnames = false
   tags = {
     Name = "${var.owner}-vpc"
   }
